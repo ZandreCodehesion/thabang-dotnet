@@ -1,4 +1,6 @@
-﻿namespace PracDay.Models
+﻿using System;
+
+namespace PracDay.Models
 {
     public class User
     {
