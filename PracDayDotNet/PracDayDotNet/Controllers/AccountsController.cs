@@ -9,6 +9,7 @@ using Microsoft.Extensions.Configuration;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
+using PracDayDotNet.Data;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -20,6 +21,7 @@ namespace PracDay.Controllers
     {
         internal Connection connection = new Connection();
         private IConfiguration _config;
+        private TokenClass token = new TokenClass();
 
         public AccountsController(IConfiguration config)
         {
@@ -27,8 +29,8 @@ namespace PracDay.Controllers
         }
 
 
-        [HttpPost("Accounts/register")]
-        public int PostUser([FromBody] User user)
+        [HttpPost("register")]
+        public int PostUser([FromBody]User user)
         {
             //Check if user exists
             //Control 1 - Success, 0 -Unsucessful , -1 Error
@@ -42,9 +44,10 @@ namespace PracDay.Controllers
             {
                 try
                 {
+
                     control = connection.openConnection().Execute(
                         @"INSERT INTO dbo.Users 
-                        VALUES('"+user.UserName+"','"+user.Password+"')");
+                        VALUES('"+Guid.NewGuid()+"','"+user.UserName+"','"+user.Password+"')");
                 }catch(Exception e)
                 {
                     control = -1;
@@ -69,11 +72,11 @@ namespace PracDay.Controllers
 
             if (user != null)
             {
-                var tokenString = GenerateJSONWebToken(user);
-                response = Ok(new { token = tokenString });
+                token.setTokenString(GenerateJSONWebToken(user));
+
             }
 
-            return response;
+            return Ok(GenerateJSONWebToken(user));
         }
 
 
