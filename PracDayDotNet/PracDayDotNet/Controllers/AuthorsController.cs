@@ -123,8 +123,8 @@ namespace PracDayDotNet.Controllers
                     control = _con.openConnection().Execute(@"
                                 UPDATE dbo.Authors
                                 SET AuthorName='" + update.AuthorName + "'," +
-                                    "ActiveFrom='" + update.ActiveFrom + "'," +
-                                    "ActiveTo='" + update.ActiveTo + "' " +
+                                    "ActiveFrom='" + update.ActiveFrom.Date + "'," +
+                                    "ActiveTo='" + update.ActiveTo.Date + "' " +
                                     "WHERE AuthorId='" + id + "'");
                 }
                 catch (Exception e)
@@ -151,7 +151,7 @@ namespace PracDayDotNet.Controllers
         {
             string loggedUser = getAuthorId();
 
-            List<Authors> existAuthor = _con.openConnection().QueryFirstOrDefault<List<Authors>>(
+            IEnumerable<Authors> existAuthor = _con.openConnection().Query<Authors>(
                 @"SELECT * FROM dbo.Authors WHERE CreatedBy=" + loggedUser + "");
 
             int control = 2;

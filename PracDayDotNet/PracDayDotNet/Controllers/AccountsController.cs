@@ -70,7 +70,7 @@ namespace PracDay.Controllers
         [HttpPost(nameof(Login))]
         public IActionResult Login([FromBody] User login)
         {
-            IActionResult response = null;
+         
             var user = AuthenticateUser(login);
 
             if (user != null)
