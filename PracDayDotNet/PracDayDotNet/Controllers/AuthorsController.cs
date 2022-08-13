@@ -14,18 +14,28 @@ using PracDay.Models;
 using Microsoft.Identity.Client;
 using PracDayDotNet.Data;
 using System.IdentityModel.Tokens.Jwt;
+using Microsoft.Extensions.Configuration;
 
 namespace PracDayDotNet.Controllers
 {
+    [Produces("application/json")]
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
     public class AuthorsController : ControllerBase
     {
+
+        private IConfiguration _config;
+
+        public AuthorsController(IConfiguration config)
+        {
+            _config = config;
+        }
         internal Connection _con = new Connection();
 
         private static TokenClass token = new TokenClass();
 
-        
+        [Authorize]
         [HttpPost("createAuthor")]
         public int CreateAuthor([FromBody] Authors authors)
         {
@@ -40,7 +50,7 @@ namespace PracDayDotNet.Controllers
                     try
                     {
                         control = _con.openConnection().Execute(@"INSERT INTO dbo.Authors 
-                            VALUES('" + authors.AuthorName + "','" + authors.ActiveFrom + "','" + authors.ActiveTo + "'," +
+                            VALUES('" + authors.AuthorName + "','" + authors.ActiveFrom.Date + "','" + authors.ActiveTo.Date + "'," +
                            "'" + authors.CreatedBy + "')");
                     }catch(Exception e)
                     {
@@ -65,6 +75,7 @@ namespace PracDayDotNet.Controllers
         }
 
 
+        [Authorize]
         [HttpGet("getAllAuthors")]
         public IEnumerable<Authors> getAllAuthors()
         {
@@ -76,6 +87,7 @@ namespace PracDayDotNet.Controllers
             return authors;
         }
 
+        [Authorize]
         [HttpGet("getAuthor/{id}")]
         public Authors getAuthor(int id)
         {
@@ -87,15 +99,22 @@ namespace PracDayDotNet.Controllers
             return author;
         }
 
+
+
+        [Authorize]
         [HttpPatch("updateAuthor/{id}")]
         public int updateAuthor([FromBody] Authors update, int id)
         {
             int control = 2;
 
-            Authors existAuthor = _con.openConnection().QueryFirstOrDefault<Authors>
-                (@"SELECT * FROM dbo.Authors WHERE AuthorId=" + id + "");
+            //Check if logged in user is the same as what I am to delete
+            string LoggedUser = getAuthorId();
 
-            if(existAuthor!= null)
+            
+            IEnumerable<Authors> authorList = _con.openConnection().Query<Authors>
+                (@"SELECT * FROM dbo.Authors WHERE CreatedBy='" + LoggedUser + "'");
+
+            if(authorList!= null)
             {
                 try
                 {
@@ -125,11 +144,16 @@ namespace PracDayDotNet.Controllers
 
         }
 
+
+        [Authorize]
         [HttpDelete("deleteAuthor/{id}")]
         public int deleteAuthor(int id)
         {
-            Authors existAuthor = _con.openConnection().QueryFirstOrDefault<Authors>(
-                @"SELECT * FROM dbo.Authors WHERE AuthorId=" + id + "");
+            string loggedUser = getAuthorId();
+
+            List<Authors> existAuthor = _con.openConnection().QueryFirstOrDefault<List<Authors>>(
+                @"SELECT * FROM dbo.Authors WHERE CreatedBy=" + loggedUser + "");
+
             int control = 2;
 
             if(existAuthor!= null)

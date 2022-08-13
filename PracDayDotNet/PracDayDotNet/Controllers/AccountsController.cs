@@ -20,9 +20,10 @@ namespace PracDay.Controllers
     public class AccountsController : ControllerBase
     {
         internal Connection connection = new Connection();
-        private IConfiguration _config;
+        
         private TokenClass token = new TokenClass();
 
+        private IConfiguration _config;
         public AccountsController(IConfiguration config)
         {
             _config = config;
@@ -63,20 +64,27 @@ namespace PracDay.Controllers
             return control;
         }
 
-        [AllowAnonymous]
-        [HttpPost("login")]
+
+        //[AllowAnonymous]
+        
+        [HttpPost(nameof(Login))]
         public IActionResult Login([FromBody] User login)
         {
-            IActionResult response = Unauthorized();
+            IActionResult response = null;
             var user = AuthenticateUser(login);
 
             if (user != null)
             {
                 token.setTokenString(GenerateJSONWebToken(user));
+                return Ok(GenerateJSONWebToken(user));
 
             }
+            else
+            {
+                return NotFound();
+            }
 
-            return Ok(GenerateJSONWebToken(user));
+          
         }
 
 

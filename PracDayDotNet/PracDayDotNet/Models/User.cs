@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace PracDay.Models
 {
@@ -6,7 +7,9 @@ namespace PracDay.Models
     {
         public Guid UserId { get; set; } 
         
+        [Required]
         public string UserName { get; set; }
+        [Required]
         public string Password { get; set; }
     }
 }
