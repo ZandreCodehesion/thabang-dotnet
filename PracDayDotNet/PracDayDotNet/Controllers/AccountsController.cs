@@ -19,7 +19,7 @@ namespace PracDay.Controllers
     [ApiController]
     public class AccountsController : ControllerBase
     {
-        internal Connection connection = new Connection();
+        private Connection connection = new Connection();
         
         private TokenClass token = new TokenClass();
 
@@ -60,7 +60,7 @@ namespace PracDay.Controllers
             {
                 control = 0;
             }
-
+            connection.closeConnection();
             return control;
         }
 
@@ -114,7 +114,7 @@ namespace PracDay.Controllers
             //Validate the User Credentials
             User existUser = connection.openConnection().QueryFirstOrDefault<User>(
                 @"SELECT * FROM dbo.Users WHERE UserName='"+login.UserName+"' AND Password='"+login.Password+"'");
-            
+            connection.closeConnection();
             return existUser ;
         }
 

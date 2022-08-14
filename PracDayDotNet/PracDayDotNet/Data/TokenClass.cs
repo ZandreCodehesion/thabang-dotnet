@@ -1,4 +1,8 @@
-﻿namespace PracDayDotNet.Data
+﻿using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
+using System.Security.Claims;
+
+namespace PracDayDotNet.Data
 {
     public class TokenClass
     {
@@ -9,9 +13,15 @@
             _tokenString = tokenString;
         }
 
-        public string getToken()
+
+        public string getAuthorId()
         {
-            return _tokenString;
+            //Decypher JWT
+            var handler = new JwtSecurityTokenHandler();
+            var decodedValue = handler.ReadJwtToken(_tokenString);
+            string authorId = decodedValue.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier)?.Value;
+            return authorId;
         }
+
     }
 }

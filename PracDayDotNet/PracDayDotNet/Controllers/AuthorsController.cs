@@ -31,9 +31,9 @@ namespace PracDayDotNet.Controllers
         {
             _config = config;
         }
-        internal Connection _con = new Connection();
+        private Connection _con = new Connection();
 
-        private static TokenClass token = new TokenClass();
+        private TokenClass token = new TokenClass();
 
         [Authorize]
         [HttpPost("createAuthor")]
@@ -46,12 +46,12 @@ namespace PracDayDotNet.Controllers
 
             if(existAuthor == null)
             {
-                authors.CreatedBy = getAuthorId();
+                authors.CreatedBy = token.getAuthorId();
                     try
                     {
                         control = _con.openConnection().Execute(@"INSERT INTO dbo.Authors 
-                            VALUES('" + authors.AuthorName + "','" + authors.ActiveFrom.Date + "','" + authors.ActiveTo.Date + "'," +
-                           "'" + authors.CreatedBy + "')");
+                            VALUES('"+Guid.NewGuid()+"','" + authors.AuthorName + "','" + authors.ActiveFrom.Date + "','" + authors.ActiveTo.Date + "'," +
+                           "'" + authors.CreatedBy + "')",authors);
                     }catch(Exception e)
                     {
                         control = -1;
@@ -62,18 +62,11 @@ namespace PracDayDotNet.Controllers
             {
                 control = 0;
             }
+            _con.closeConnection();
             return control;
         }
 
-        private static string getAuthorId()
-        {
-            //Decypher JWT
-            var handler = new JwtSecurityTokenHandler();
-            var decodedValue = handler.ReadJwtToken(token.getToken());
-            string authorId = decodedValue.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier)?.Value;
-            return authorId;
-        }
-
+        
 
         [Authorize]
         [HttpGet("getAllAuthors")]
@@ -88,11 +81,11 @@ namespace PracDayDotNet.Controllers
         }
 
         [Authorize]
-        [HttpGet("getAuthor/{id}")]
-        public Authors getAuthor(int id)
+        [HttpGet("getAuthor/{AuthorId}")]
+        public Authors getAuthor(string AuthorId)
         {
             Authors author = _con.openConnection().QueryFirstOrDefault<Authors>(
-                @"SELECT * FROM dbo.Authors WHERE AuthorId="+id+"");
+                @"SELECT * FROM dbo.Authors WHERE AuthorId='"+AuthorId+"'");
 
             _con.closeConnection();
 
@@ -102,13 +95,13 @@ namespace PracDayDotNet.Controllers
 
 
         [Authorize]
-        [HttpPatch("updateAuthor/{id}")]
-        public int updateAuthor([FromBody] Authors update, int id)
+        [HttpPatch("updateAuthor/{AuthorId}")]
+        public int updateAuthor([FromBody] Authors update, string AuthorId)
         {
             int control = 2;
 
             //Check if logged in user is the same as what I am to delete
-            string LoggedUser = getAuthorId();
+            string LoggedUser = token.getAuthorId();
 
             
             IEnumerable<Authors> authorList = _con.openConnection().Query<Authors>
@@ -125,7 +118,7 @@ namespace PracDayDotNet.Controllers
                                 SET AuthorName='" + update.AuthorName + "'," +
                                     "ActiveFrom='" + update.ActiveFrom.Date + "'," +
                                     "ActiveTo='" + update.ActiveTo.Date + "' " +
-                                    "WHERE AuthorId='" + id + "'");
+                                    "WHERE AuthorId='" +AuthorId + "'");
                 }
                 catch (Exception e)
                 {
@@ -146,13 +139,13 @@ namespace PracDayDotNet.Controllers
 
 
         [Authorize]
-        [HttpDelete("deleteAuthor/{id}")]
-        public int deleteAuthor(int id)
+        [HttpDelete("deleteAuthor/{AuthorId}")]
+        public int deleteAuthor(string AuthorId)
         {
-            string loggedUser = getAuthorId();
+            string loggedUser = token.getAuthorId();
 
             IEnumerable<Authors> existAuthor = _con.openConnection().Query<Authors>(
-                @"SELECT * FROM dbo.Authors WHERE CreatedBy=" + loggedUser + "");
+                @"SELECT * FROM dbo.Authors WHERE CreatedBy='" + loggedUser + "'");
 
             int control = 2;
 
@@ -162,7 +155,7 @@ namespace PracDayDotNet.Controllers
                 {
                     control = _con.openConnection().Execute(
                         @"DELETE FROM dbo.Authors 
-                            WHERE AuthorId=" + id + "");
+                            WHERE AuthorId='" + AuthorId + "'");
                 }catch(Exception e)
                 {
                     control = -1;
@@ -173,7 +166,7 @@ namespace PracDayDotNet.Controllers
             {
                 control = 0;
             }
-
+            _con.closeConnection();
             return control;
         }
 

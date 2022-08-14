@@ -12,7 +12,7 @@ namespace PracDayDotNet.Models
         public string Publisher { get; set; }
         public DateTime DatePublished { get; set; }
         public int CopiesSold { get; set; }
-        public Guid Author { get; set; } //GUID(AuthorId)
-        public Guid CreatedBy{ get; set; } //GUID(UserId)
+        public string AuthorId { get; set; } //GUID(AuthorId)
+        public string CreatedBy{ get; set; } //GUID(UserId)
 }
 }

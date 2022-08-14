@@ -7,10 +7,10 @@ namespace PracDayDotNet.Models
 {
     public class Authors
     {
-        public int AuthorId { get; set; }
+        public Guid AuthorId { get; set; }
         public string AuthorName { get; set; }
         public DateTime ActiveFrom { get; set; }
         public DateTime ActiveTo { get; set; }
-        public string  CreatedBy { get; set; }
+        public string CreatedBy { get; set; }
     }
 }
